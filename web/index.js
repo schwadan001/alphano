@@ -1,5 +1,5 @@
-// NOTE: this example uses the chess.js library:
 // https://github.com/jhlywa/chess.js
+// https://github.com/oakmac/chessboardjs/
 
 var board = null
 var game = new Chess()
