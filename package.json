@@ -1,0 +1,29 @@
+{
+  "name": "alphano",
+  "description": "AlphaNo",
+  "version": "1.0.0",
+  "license": "MIT",
+  "author": "DJS",
+  "engines": {
+    "node": ">=8"
+  },
+  "repository": "https://github.com/schwadan001/alphano",
+  "main": "app.js",
+  "private": true,
+  "cloud-repo-tools": {
+    "requiresKeyFile": true,
+    "requiresProjectId": true
+  },
+  "scripts": {
+    "start": "node app.js",
+    "e2e": "repo-tools test deploy",
+    "test": "repo-tools test app",
+    "cover": "nyc --cache npm test; nyc report --reporter=html"
+  },
+  "dependencies": {
+    "chess.js": "^0.10.2",
+    "express": "^4.16.4",
+    "jquery": ">=3.4.1"
+  },
+  "devDependencies": {}
+}
