@@ -14,6 +14,10 @@ app.get("/sitemap.xml", function (req, res) {
   res.sendFile(path.join(__dirname + "/sitemap.xml"));
 })
 
+app.get("/google63001e0b6d2bf67b.html", function (req, res) {
+  res.sendFile(path.join(__dirname + "/google63001e0b6d2bf67b.html"));
+})
+
 app.get("/favicon.ico", function (req, res) {
   res.sendFile(path.join(__dirname + "/favicon.ico"));
 })
