@@ -32,6 +32,10 @@ function eval(origGame, move) {
       value += values[char.toLowerCase()] * multiplier * turnMultiplier;
     }
   }
+  // discourage stalemate if we're ahead; encourage if we're behind
+  if (newGame.in_stalemate()) {
+    value += ((value > 0) ? -10 : 10);
+  }
   return value;
 }
 
@@ -48,7 +52,7 @@ function onDragStart(source, piece, position, orientation) {
 function getBestMove(origGame, level) {
   let possibleMoves = shuffle(origGame.moves());
   if (possibleMoves.length == 0) { // game over
-    return;
+    return [undefined, -Infinity];
   } else {
     var bestMove;
     var bestEval = -Infinity;
