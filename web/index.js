@@ -39,28 +39,41 @@ function onDragStart(source, piece, position, orientation) {
   // do not pick up pieces if the game is over
   if (game.game_over()) return false;
 
-  // only pick up pieces for White
+  // only pick up pieces for white
   if (piece.search(/^b/) !== -1) return false;
 }
 
-function makeAiMove() {
-  let possibleMoves = shuffle(game.moves());
+// level param specifies the number of searches deep
+// simple min-max with no alpha-beta pruning
+function getBestMove(origGame, level) {
+  let possibleMoves = shuffle(origGame.moves());
   if (possibleMoves.length == 0) { // game over
     return;
   } else {
-    var bestMove = null;
+    var bestMove;
     var bestEval = -Infinity;
     possibleMoves.forEach(m => {
-      let val = eval(game, m);
+      var val;
+      if (level < 2) {
+        val = eval(origGame, m);
+      } else {
+        let newGame = new Chess(origGame.fen());
+        newGame.move(m);
+        val = getBestMove(newGame, level - 1)[1] * -1;
+      }
       if (val >= bestEval) {
         bestEval = val;
         bestMove = m;
       }
     })
-    game.move(bestMove);
-    board.position(game.fen());
-    console.log(game.fen());
+    return [bestMove, bestEval];
   }
+}
+
+function makeAiMove() {
+  let bestMove = getBestMove(game, 2)[0]; // search 2 levels deep
+  game.move(bestMove);
+  board.position(game.fen());
 }
 
 function onDrop(source, target, piece, newPos, oldPos, orientation) {
@@ -83,16 +96,6 @@ function onSnapEnd() {
   board.position(game.fen());
 }
 
-var config = {
-  draggable: true,
-  position: 'start',
-  onDragStart: onDragStart,
-  onDrop: onDrop,
-  onSnapEnd: onSnapEnd
-}
-
-board = Chessboard('board', config);
-
 function shuffle(a) {
   var j, x, i;
   for (i = a.length - 1; i > 0; i--) {
@@ -103,3 +106,13 @@ function shuffle(a) {
   }
   return a;
 }
+
+var config = {
+  draggable: true,
+  position: 'start',
+  onDragStart: onDragStart,
+  onDrop: onDrop,
+  onSnapEnd: onSnapEnd
+}
+
+board = Chessboard('board', config);
