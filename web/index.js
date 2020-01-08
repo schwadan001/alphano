@@ -3,24 +3,25 @@
 
 var board = null;
 var game = new Chess();
+var counter = 0;
 
 let values = {
   "p": 100,
-  "k": 310,
+  "n": 310,
   "b": 320,
   "r": 500,
   "q": 900
 }
 
 // Returns a numerical board evaluation. The higher the positive number, the more favorable the move
-function eval(origGame, move) {
-  let turnMultiplier = (origGame.fen().split(" ")[1] == "w") ? 1 : -1;
+function eval(origGame, move, perspective) {
+  let turnMultiplier = (perspective == "w") ? 1 : -1;
   // create copy of board and simulate move
   let newGame = new Chess(origGame.fen());
   newGame.move(move);
   // evaluate board after move
   if (newGame.in_checkmate()) {
-    return Infinity;
+    return Infinity * turnMultiplier;
   }
   let fen = newGame.fen();
   let pieces = fen.split(" ")[0];
@@ -28,8 +29,8 @@ function eval(origGame, move) {
   for (var x = 0; x < pieces.length; x++) {
     let char = pieces.charAt(x);
     if (values.hasOwnProperty(char.toLowerCase())) {
-      let multiplier = (char == char.toUpperCase()) ? 1 : -1;
-      value += values[char.toLowerCase()] * multiplier * turnMultiplier;
+      let colorMultiplier = (char == char.toUpperCase()) ? 1 : -1;
+      value += values[char.toLowerCase()] * colorMultiplier * turnMultiplier;
     }
   }
   // discourage stalemate if we're ahead; encourage if we're behind
@@ -48,24 +49,25 @@ function onDragStart(source, piece, position, orientation) {
 }
 
 // level param specifies the number of searches deep
-// simple min-max with no alpha-beta pruning
-function getBestMove(origGame, level) {
+function getBestMove(origGame, perspective, maxLevel, level = 1) {
+  let maximize = (level % 2 != 0);
+  counter += 1;
   let possibleMoves = shuffle(origGame.moves());
   if (possibleMoves.length == 0) { // game over
-    return [undefined, -Infinity];
+    throw Error("There are no valid moves");
   } else {
     var bestMove;
-    var bestEval = -Infinity;
+    var bestEval = (maximize ? -Infinity : Infinity);
     possibleMoves.forEach(m => {
       var val;
-      if (level < 2) {
-        val = eval(origGame, m);
+      if (level == maxLevel) {
+        val = eval(origGame, m, perspective);
       } else {
         let newGame = new Chess(origGame.fen());
         newGame.move(m);
-        val = getBestMove(newGame, level - 1)[1] * -1;
+        val = getBestMove(newGame, perspective, maxLevel, level + 1)[1];
       }
-      if (val >= bestEval) {
+      if (maximize ? val >= bestEval : val <= bestEval) {
         bestEval = val;
         bestMove = m;
       }
@@ -75,9 +77,11 @@ function getBestMove(origGame, level) {
 }
 
 function makeAiMove() {
-  let bestMove = getBestMove(game, 2)[0]; // search 2 levels deep
-  game.move(bestMove);
-  board.position(game.fen());
+  if (!game.game_over()) {
+    let bestMove = getBestMove(game, game.fen().split(" ")[1], 2)
+    game.move(bestMove[0]);
+    board.position(game.fen());
+  }
 }
 
 function onDrop(source, target, piece, newPos, oldPos, orientation) {
@@ -100,15 +104,40 @@ function onSnapEnd() {
   board.position(game.fen());
 }
 
-function shuffle(a) {
+function shuffle(arr) {
   var j, x, i;
-  for (i = a.length - 1; i > 0; i--) {
+  for (i = arr.length - 1; i > 0; i--) {
     j = Math.floor(Math.random() * (i + 1));
-    x = a[i];
-    a[i] = a[j];
-    a[j] = x;
+    x = arr[i];
+    arr[i] = arr[j];
+    arr[j] = x;
   }
-  return a;
+  return arr;
+}
+
+function getSquareNames() {
+  var b = [];
+  let dim = 8;
+  for (j = dim; j > 0; j--) {
+    var column = [];
+    for (i = 97; i < 97 + dim; i++) {
+      column.push(String.fromCharCode(i) + j.toString());
+    }
+    b.push(column);
+  }
+  return b;
+}
+
+function getBoardSquares() {
+  return getSquareNames().map(r => r.map(c => {
+    let square = game.get(c);
+    if (square == null) {
+      return square;
+    } else {
+      let type = square["type"]
+      return ((square["color"] == "w") ? type.toUpperCase() : type);
+    }
+  }));
 }
 
 var config = {
