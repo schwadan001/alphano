@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const router = express.Router();
 const path = require("path");
+const Ai = require("./ai.js");
 const port = 8080;
 
 // HTML page routing
@@ -45,6 +46,12 @@ app.get("/img/chesspieces/wikipedia/:img", function (req, res) {
 
 
 /* Handle GET requests for game actions */
+app.get("/api/ai/:fen", function (req, res) {
+  let fen = req.params.fen.split("|").join("/");
+  Ai.getAiMove(fen, 2, function(move) {
+    res.send({"move": move});
+  })
+})
 
 
 // return 404 status for invalid pages - will remove from Google indexing
