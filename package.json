@@ -2,7 +2,7 @@
   "name": "alphano",
   "description": "AlphaNo",
   "version": "1.0.0",
-  "license": "MIT",
+  "license": "(BSD-2-Clause OR MIT OR GPL-3.0)",
   "author": "DJS",
   "engines": {
     "node": ">=8"
@@ -21,7 +21,6 @@
     "cover": "nyc --cache npm test; nyc report --reporter=html"
   },
   "dependencies": {
-    "chess.js": "^0.10.2",
     "express": "^4.16.4",
     "jquery": ">=3.4.1"
   },

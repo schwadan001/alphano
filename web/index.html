@@ -20,9 +20,6 @@
     <link rel="stylesheet" href="web/index.css">
     <link rel="stylesheet" href="css/chessboard-1.0.0.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
-    <script src="js/chessboard-1.0.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.2/chess.js"></script>
 </head>
 
 <body>
@@ -35,11 +32,20 @@
     </div>
     <div class="flex-vert">
         <div id="board" class="flex-item" style="width: 450px"></div>
+        <div class="flex-item">
+          Powered by <a href="https://github.com/op12no2/lozza" target="_blank">Lozza</a> | 
+          <a href="https://github.com/jhlywa/chess.js" target="_blank">Chess.Js</a> | 
+          <a href="https://github.com/oakmac/chessboardjs/" target="_blank">ChessboardJs</a>
+        </div>
     </div>
-    <script src="web/index.js"></script>
 </body>
 
-<!-- JavaScript Resources -->
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.2/chess.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script src="js/chessboard-1.0.0.min.js"></script>
+<script src="js/lozuilib.js"></script>
+<script src="js/lozza.js"></script>
+<script src="web/index.js"></script>
 
 </html>
