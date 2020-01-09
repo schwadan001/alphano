@@ -1,6 +1,5 @@
-
 if (!window.Worker) {
-  document.write('<p>Your Browser is too old for this site<p>Try <a href="https://www.google.com/chrome/">Google Chrome</a></a><p>');
+  document.write('<div>Your Browser is too old for this site. Try <a href="https://www.google.com/chrome/">Google Chrome</a>.</div>');
   exit;
 }
 
@@ -12,17 +11,14 @@ var engine = null;
 var startFrom = 'startpos';
 var startFromUI = 'start';
 
-lozData.page = 'play.htm';
+lozData.page = 'index.html';
 lozData.idInfo = '#info';
 lozData.idStats = '#stats';
 
 function lozUpdateBestMove() {
-
   var move = {};
-
   move.from = lozData.bmFr;
   move.to = lozData.bmTo;
-
   if (lozData.bmPr) {
     move.promotion = lozData.bmPr;
   }
@@ -31,34 +27,31 @@ function lozUpdateBestMove() {
   board.position(chess.fen());
   $('#moves').html(chess.pgn({ newline_char: '<br>' }));
 
-  if (!chess.game_over())
+  if (!chess.game_over()) {
     drag = true;
-  else
+  } else {
     showEnd();
+  }
 }
 
 function lozUpdatePV() {
-
-  if (args.h != "y" && lozData.units == 'cp')
+  if (args.h != "y" && lozData.units == 'cp') {
     $(lozData.idInfo).prepend('depth ' + lozData.depth + ' (' + lozData.score + ') ' + lozData.pv + '<br>');
-  else if (lozData.score > 0 && lozData.units != 'cp')
+  } else if (lozData.score > 0 && lozData.units != 'cp') {
     $(lozData.idInfo).prepend('depth ' + lozData.depth + ' (<b>mate in ' + lozData.score + '</b>) ' + lozData.pv + '<br>');
-  else if (lozData.units != 'cp')
+  } else if (lozData.units != 'cp') {
     $(lozData.idInfo).prepend('depth ' + lozData.depth + ' (<b>checkmate</b>) ' + lozData.pv + '<br>');
-
+  }
 }
 
 var onDrop = function (source, target, piece, newPos, oldPos, orientation) {
-
   if (target == 'offboard' || target == source) {
     return;
   }
-
   var move = chess.move({ from: source, to: target, promotion: 'q' })
   if (!move) {
     return 'snapback';
   }
-
   if (move.flags == 'e' || move.flags == 'p' || move.flags == 'k' || move.flags == 'q')
     board.position(chess.fen());
 
@@ -71,38 +64,36 @@ var onDrop = function (source, target, piece, newPos, oldPos, orientation) {
     $(lozData.idInfo).html('');
     var movetime = getMoveTime() * 1000;
     engine.postMessage('position ' + startFrom + ' moves ' + strMoves());
-    if (args.m)
+    if (args.m) {
       engine.postMessage(args.m);
-    else
+    } else {
       engine.postMessage('go movetime ' + movetime);
-  }
-  else
+    }
+  } else {
     showEnd();
+  }
 };
 
 var onDragStart = function (source, piece, position, orientation) {
-
   if ((!drag || orientation === 'white' && piece.search(/^w/) === -1) || (orientation === 'black' && piece.search(/^b/) === -1)) {
     return false;
   }
-
   return true;
 };
 
 function strMoves() {
-
   var movesStr = '';
   var moves = chess.history({ verbose: true });
-
   for (var i = 0; i < moves.length; i++) {
-    if (i)
+    if (i) {
       movesStr += ' ';
+    }
     var move = moves[i];
     movesStr += move.from + move.to;
-    if (move.promotion)
+    if (move.promotion) {
       movesStr += move.promotion;
+    }
   }
-
   return movesStr;
 }
 
@@ -123,7 +114,6 @@ function showEnd() {
 }
 
 function getMoveTime() {
-
   var t = parseInt($('#permove').val());
   if (t <= 0 || !t) {
     t = 1;
@@ -142,34 +132,22 @@ $(function () {
   $('input').tooltip({ delay: { "show": 1000, "hide": 100 } });
 
   $('#playw').click(function () {
-
     window.location = lozMakeURL({
       t: getMoveTime()
     });
-
     return true;
   });
 
   $('#playb').click(function () {
-
     window.location = lozMakeURL({
       t: getMoveTime(),
       c: 'b'
     });
-
     return true;
-  });
-
-  $('#analyse').click(function () {
-
-    window.open("fen.htm?fen=" + chess.fen(), "_blank");
-
-    return false;
   });
 
   engine = new Worker(lozData.source);
   engine.onmessage = lozStandardRx;
-
 
   if (args.fen) {
     startFrom = 'fen ' + args.fen;
@@ -177,9 +155,9 @@ $(function () {
     chess = new Chess(args.fen);
     $("#playw").hide();
     $("#playb").hide();
-  }
-  else
+  } else {
     chess = new Chess();
+  }
 
   board = new ChessBoard('board', {
     showNotation: true,
@@ -199,24 +177,19 @@ $(function () {
     engine.postMessage('position ' + startFrom);
     engine.postMessage('go movetime ' + getMoveTime() * 1000);
     $(lozData.idInfo).prepend('You are black' + '<br>');
-  }
-  else if (!args.fen && args.c != 'b' || args.fen && args.fen.search(' w') !== -1 && args.c != 'b') {
+  } else if (!args.fen && args.c != 'b' || args.fen && args.fen.search(' w') !== -1 && args.c != 'b') {
     board.orientation('white');
     $(lozData.idInfo).prepend('Your move with white pieces' + '<br>');
-  }
-  else if (args.fen && args.fen.search(' b') !== -1 && args.c == 'b') {
+  } else if (args.fen && args.fen.search(' b') !== -1 && args.c == 'b') {
     board.orientation('black');
     $(lozData.idInfo).prepend('Your move with black pieces' + '<br>');
-  }
-  else if (args.fen && args.fen.search(' b') !== -1 && args.c != 'b') {
+  } else if (args.fen && args.fen.search(' b') !== -1 && args.c != 'b') {
     board.orientation('white');
     engine.postMessage('position ' + startFrom);
     engine.postMessage('go movetime ' + getMoveTime() * 1000);
     $(lozData.idInfo).prepend('You are white' + '<br>');
-  }
-  else {
+  } else {
     $(lozData.idInfo).prepend('INCONSISTENT ARGS' + '<br>');
   }
-
 });
 
