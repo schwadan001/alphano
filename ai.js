@@ -17,18 +17,14 @@ let values = {
     "q": 900
 }
 
-// Returns a numerical board evaluation after a move
-// The higher the positive number, the more favorable the move
-function eval(origGame, move, perspective) {
+// returns a numerical board evaluation from a player's perspective
+// higher positive numbers are more favorable 
+function eval(board, perspective) {
     let turnMultiplier = (perspective == "w") ? 1 : -1;
-    // create copy of board and simulate move
-    let newGame = new Chess(origGame.fen());
-    newGame.move(move);
-    // evaluate board after move
-    if (newGame.in_checkmate()) {
+    if (board.in_checkmate()) {
         return Infinity * turnMultiplier;
     }
-    let fen = newGame.fen();
+    let fen = board.fen();
     let pieces = fen.split(" ")[0];
     var value = 0;
     for (var x = 0; x < pieces.length; x++) {
@@ -39,7 +35,7 @@ function eval(origGame, move, perspective) {
         }
     }
     // discourage stalemate if we're ahead; encourage if we're behind
-    if (newGame.in_stalemate()) {
+    if (board.in_stalemate()) {
         value += ((value > 0) ? -10 : 10);
     }
     return value;
@@ -58,17 +54,13 @@ function getBestMove(origGame, perspective, maxLevel, level = 1, bestEvals = {})
             counter += 1;
             let m = possibleMoves[i];
             var val;
-            if (level == maxLevel) {
-                val = eval(origGame, m, perspective);
+            let newGame = new Chess(origGame.fen());
+            newGame.move(m);
+            if (level == maxLevel || newGame.game_over()) {
+                val = eval(newGame, perspective);
             } else {
-                let newGame = new Chess(origGame.fen());
-                newGame.move(m);
-                if (newGame.game_over()) {
-                    val = eval(origGame, m, perspective);
-                } else {
-                    result = getBestMove(newGame, perspective, maxLevel, level + 1, bestEvals);
-                    val = result.bestEval;
-                }
+                result = getBestMove(newGame, perspective, maxLevel, level + 1, bestEvals);
+                val = result.bestEval;
             }
             let pruneVal = bestEvals[level - 1];
             if (pruneVal != undefined && (maximize ? val < pruneVal : val < pruneVal)) {
