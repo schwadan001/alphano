@@ -41,9 +41,8 @@ function eval(board, perspective) {
     return value;
 }
 
-// level param specifies the number of searches deep
-function getBestMove(origGame, perspective, maxLevel, level = 1, bestEvals = {}) {
-    let maximize = (level % 2 != 0);
+function getBestMove(origGame, perspective, maxDepth, ply = 1, bestEvals = {}) {
+    let maximize = (ply % 2 != 0);
     let possibleMoves = shuffle(origGame.moves());
     if (possibleMoves.length == 0) { // game over
         throw Error("There are no valid moves");
@@ -56,19 +55,19 @@ function getBestMove(origGame, perspective, maxLevel, level = 1, bestEvals = {})
             var val;
             let newGame = new Chess(origGame.fen());
             newGame.move(m);
-            if (level == maxLevel || newGame.game_over()) {
+            if (ply == maxDepth || newGame.game_over()) {
                 val = eval(newGame, perspective);
             } else {
-                result = getBestMove(newGame, perspective, maxLevel, level + 1, bestEvals);
+                result = getBestMove(newGame, perspective, maxDepth, ply + 1, bestEvals);
                 val = result.bestEval;
             }
-            let pruneVal = bestEvals[level - 1];
+            let pruneVal = bestEvals[ply - 1];
             if (pruneVal != undefined && (maximize ? val < pruneVal : val < pruneVal)) {
-                pruned += (possibleMoves.length - 1 - i) ** (maxLevel - level + 1);
+                pruned += (possibleMoves.length - 1 - i) ** (maxDepth - ply + 1);
                 return { "bestMove": m, "bestEval": val };
             }
-            if (bestEvals[level] == undefined || (maximize ? val >= bestEvals[level] : val <= bestEvals[level])) {
-                bestEvals[level] = val;
+            if (bestEvals[ply] == undefined || (maximize ? val >= bestEvals[ply] : val <= bestEvals[ply])) {
+                bestEvals[ply] = val;
             }
             if (maximize ? val >= bestEval : val <= bestEval) {
                 bestMove = m;

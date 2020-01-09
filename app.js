@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const router = express.Router();
 const path = require("path");
-const Ai = require("./ai.js");
+const Ai = require("./js/ai.js");
 const port = 8080;
 
 // HTML page routing
@@ -32,16 +32,16 @@ app.get("/web/index.js", function (req, res) {
 })
 
 app.get("/css/chessboard-1.0.0.min.css", function (req, res) {
-  res.sendFile(path.join(__dirname + "/chessboard/css/chessboard-1.0.0.min.css"));
+  res.sendFile(path.join(__dirname + "/css/chessboard-1.0.0.min.css"));
 })
 
 app.get("/js/chessboard-1.0.0.min.js", function (req, res) {
-  res.sendFile(path.join(__dirname + "/chessboard/js/chessboard-1.0.0.min.js"));
+  res.sendFile(path.join(__dirname + "/js/chessboard-1.0.0.min.js"));
 })
 
 app.get("/img/chesspieces/wikipedia/:img", function (req, res) {
   let img = req.params.img;
-  res.sendFile(path.join(__dirname + "/chessboard/img/chesspieces/wikipedia/" + img));
+  res.sendFile(path.join(__dirname + "/img/chesspieces/wikipedia/" + img));
 })
 
 
