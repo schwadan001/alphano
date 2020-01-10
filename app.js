@@ -25,12 +25,16 @@ app.get("/js/chessboard-1.0.0.min.js", function (req, res) {
   res.sendFile(path.join(__dirname + "/js/chessboard-1.0.0.min.js"));
 })
 
-app.get("/js/lozza.js", function (req, res) {
-  res.sendFile(path.join(__dirname + "/js/lozza.js"));
+app.get("/js/lozza.min.js", function (req, res) {
+  res.sendFile(path.join(__dirname + "/js/lozza.min.js"));
 })
 
-app.get("/js/lozuilib.js", function (req, res) {
-  res.sendFile(path.join(__dirname + "/js/lozuilib.js"));
+app.get("/js/lozza-ui-lib.js", function (req, res) {
+  res.sendFile(path.join(__dirname + "/js/lozza-ui-lib.js"));
+})
+
+app.get("/js/simple-ai.js", function (req, res) {
+  res.sendFile(path.join(__dirname + "/js/simple-ai.js"));
 })
 
 app.get("/img/chesspieces/wikipedia/:img", function (req, res) {

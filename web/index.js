@@ -3,90 +3,115 @@ if (!window.Worker) {
   exit;
 }
 
-var args = lozGetURLArgs();
+let saiDifficulties = ["beginner", "easy"]
+let difficultyMap = {
+  "beginner": 1,
+  "easy": 2,
+  "hard": 1,
+  "extreme": 3
+}
+
+let playerNames = {
+  "b": "Black",
+  "w": "White"
+}
+
+let pieceNames = {
+  "p": "pawn",
+  "n": "knight",
+  "b": "bisop",
+  "r": "rook",
+  "q": "queen",
+  "k": "king"
+}
+
 var board = null;
 var chess = null;
 var drag = true;
-var engine = null;
-var startFrom = 'startpos';
-var startFromUI = 'start';
+var lozzaEngine = null;
+var lozzaStart = "startpos";
+var uiStart = "start";
 
-lozData.page = 'index.html';
-lozData.idInfo = '#info';
-lozData.idStats = '#stats';
+gameData.page = "index.html";
+gameData.boardId = "board";
+gameData.infoId = "#info";
+
+function restart() {
+  document.location.reload();
+}
 
 function lozUpdateBestMove() {
   var move = {};
-  move.from = lozData.bmFr;
-  move.to = lozData.bmTo;
-  if (lozData.bmPr) {
-    move.promotion = lozData.bmPr;
+  move.from = gameData.bmFr;
+  move.to = gameData.bmTo;
+  if (gameData.bmPr) {
+    move.promotion = gameData.bmPr;
+  }
+  executeMove(move);
+}
+
+function onDrop(source, target, piece, newPos, oldPos, orientation) {
+  let move = chess.move({ from: source, to: target, promotion: "q" })
+  if (!move) {
+    return "snapback";
+  }
+  if (move.flags == "e" || move.flags == "p" || move.flags == "k" || move.flags == "q") {
+    board.position(chess.fen());
   }
 
+  drag = false;
+  setNotification();
+
+  // make AI move based on difficulty
+  if (chess.game_over()) {
+    setNotification();
+  } else {
+    makeAiMove();
+  }
+}
+
+function makeAiMove() {
+  let difficulty = getDifficulty();
+  setTimeout(function () {
+    if (saiDifficulties.includes(difficulty)) {
+      let move = saiGetBestMove(chess, getTurn(), difficultyMap[difficulty]);
+      executeMove(move.bestMove);
+    } else {
+      makeLozzaMove();
+    }
+    setNotification();
+  }, 500);
+}
+
+function makeLozzaMove() {
+  let movetime = getMoveTime() * 1000;
+  lozzaEngine.postMessage("position " + lozzaStart + " moves " + strMoves());
+  lozzaEngine.postMessage("go movetime " + movetime);
+}
+
+function executeMove(move) {
   chess.move(move);
   board.position(chess.fen());
-  $('#moves').html(chess.pgn({ newline_char: '<br>' }));
-
   if (!chess.game_over()) {
     drag = true;
   } else {
-    showEnd();
+    setNotification();
   }
 }
-
-function lozUpdatePV() {
-  if (args.h != "y" && lozData.units == 'cp') {
-    $(lozData.idInfo).prepend('depth ' + lozData.depth + ' (' + lozData.score + ') ' + lozData.pv + '<br>');
-  } else if (lozData.score > 0 && lozData.units != 'cp') {
-    $(lozData.idInfo).prepend('depth ' + lozData.depth + ' (<b>mate in ' + lozData.score + '</b>) ' + lozData.pv + '<br>');
-  } else if (lozData.units != 'cp') {
-    $(lozData.idInfo).prepend('depth ' + lozData.depth + ' (<b>checkmate</b>) ' + lozData.pv + '<br>');
-  }
-}
-
-var onDrop = function (source, target, piece, newPos, oldPos, orientation) {
-  if (target == 'offboard' || target == source) {
-    return;
-  }
-  var move = chess.move({ from: source, to: target, promotion: 'q' })
-  if (!move) {
-    return 'snapback';
-  }
-  if (move.flags == 'e' || move.flags == 'p' || move.flags == 'k' || move.flags == 'q')
-    board.position(chess.fen());
-
-  var pgn = chess.pgn({ newline_char: '<br>' });
-  $('#moves').html(pgn);
-
-  drag = false;
-
-  if (!chess.game_over()) {
-    $(lozData.idInfo).html('');
-    var movetime = getMoveTime() * 1000;
-    engine.postMessage('position ' + startFrom + ' moves ' + strMoves());
-    if (args.m) {
-      engine.postMessage(args.m);
-    } else {
-      engine.postMessage('go movetime ' + movetime);
-    }
-  } else {
-    showEnd();
-  }
-};
 
 var onDragStart = function (source, piece, position, orientation) {
-  if ((!drag || orientation === 'white' && piece.search(/^w/) === -1) || (orientation === 'black' && piece.search(/^b/) === -1)) {
+  if ((!drag || orientation === "white" && piece.search(/^w/) === -1) || (orientation === "black" && piece.search(/^b/) === -1)) {
     return false;
   }
   return true;
 };
 
 function strMoves() {
-  var movesStr = '';
+  var movesStr = "";
   var moves = chess.history({ verbose: true });
   for (var i = 0; i < moves.length; i++) {
     if (i) {
-      movesStr += ' ';
+      movesStr += " ";
     }
     var move = moves[i];
     movesStr += move.from + move.to;
@@ -97,99 +122,60 @@ function strMoves() {
   return movesStr;
 }
 
-function showEnd() {
-
-  if (chess.in_checkmate())
-    $(lozData.idInfo).html('Checkmate');
-  else if (chess.insufficient_material())
-    $(lozData.idInfo).html('Draw due to insufficient material');
-  else if (chess.in_draw())
-    $(lozData.idInfo).html('Draw by 50 move rule');
-  else if (chess.in_stalemate())
-    $(lozData.idInfo).html('Draw by stalemate');
-  else if (chess.in_threefold_repetition())
-    $(lozData.idInfo).html('Draw by threefold repetition');
-  else
-    $(lozData.idInfo).html('Game over but not sure why!');
+function getDifficulty() {
+  let e = document.getElementById("difficulty");
+  return e.options[e.selectedIndex].value;
 }
 
 function getMoveTime() {
-  var t = parseInt($('#permove').val());
-  if (t <= 0 || !t) {
-    t = 1;
-    $('#permove').val(1);
+  let moveTime = difficultyMap[getDifficulty()];
+  if (moveTime == undefined || moveTime < 1 || moveTime > 10) {
+    return 1;
   }
-  return t;
+  return moveTime;
+}
+
+function getTurn() {
+  return chess.fen().split(" ")[1];
+}
+
+function setNotification() {
+  let moves = chess.history({ verbose: true });
+  let lastMove = moves[moves.length - 1];
+  var notification = ""
+  if (chess.in_checkmate()) {
+    notification = "Checkmate - " + playerNames[lastMove.color] + " wins!";
+  } else if (chess.insufficient_material()) {
+    notification = "Draw due to insufficient material";
+  } else if (chess.in_draw()) {
+    notification = "Draw by 50 move rule";
+  } else if (chess.in_stalemate()) {
+    notification = "Draw by stalemate";
+  } else if (chess.in_threefold_repetition()) {
+    notification = "Draw by threefold repetition";
+  } else {
+    if (moves.length > 0) {
+      notification = playerNames[lastMove.color] + " moved " + pieceNames[lastMove.piece] +
+        " from " + lastMove.from + " to " + lastMove.to;
+    }
+  }
+  $(gameData.infoId).html(notification);
 }
 
 $(function () {
-
-  if (args.t) {
-    $('#permove').val(args.t);
-    getMoveTime();
-  }
-
-  $('input').tooltip({ delay: { "show": 1000, "hide": 100 } });
-
-  $('#playw').click(function () {
-    window.location = lozMakeURL({
-      t: getMoveTime()
-    });
-    return true;
-  });
-
-  $('#playb').click(function () {
-    window.location = lozMakeURL({
-      t: getMoveTime(),
-      c: 'b'
-    });
-    return true;
-  });
-
-  engine = new Worker(lozData.source);
-  engine.onmessage = lozStandardRx;
-
-  if (args.fen) {
-    startFrom = 'fen ' + args.fen;
-    startFromUI = args.fen;
-    chess = new Chess(args.fen);
-    $("#playw").hide();
-    $("#playb").hide();
-  } else {
-    chess = new Chess();
-  }
-
-  board = new ChessBoard('board', {
+  chess = new Chess();
+  board = new ChessBoard(gameData.boardId, {
     showNotation: true,
     draggable: true,
-    dropOffBoard: 'snapback',
+    dropOffBoard: "snapback",
     onDrop: onDrop,
     onDragStart: onDragStart,
-    position: startFromUI
+    position: uiStart
   });
 
-  engine.postMessage('uci')
-  engine.postMessage('ucinewgame')
-  engine.postMessage('debug off')
-
-  if (!args.fen && args.c == 'b' || args.fen && args.fen.search(' w') !== -1 && args.c == 'b') {
-    board.orientation('black');
-    engine.postMessage('position ' + startFrom);
-    engine.postMessage('go movetime ' + getMoveTime() * 1000);
-    $(lozData.idInfo).prepend('You are black' + '<br>');
-  } else if (!args.fen && args.c != 'b' || args.fen && args.fen.search(' w') !== -1 && args.c != 'b') {
-    board.orientation('white');
-    $(lozData.idInfo).prepend('Your move with white pieces' + '<br>');
-  } else if (args.fen && args.fen.search(' b') !== -1 && args.c == 'b') {
-    board.orientation('black');
-    $(lozData.idInfo).prepend('Your move with black pieces' + '<br>');
-  } else if (args.fen && args.fen.search(' b') !== -1 && args.c != 'b') {
-    board.orientation('white');
-    engine.postMessage('position ' + startFrom);
-    engine.postMessage('go movetime ' + getMoveTime() * 1000);
-    $(lozData.idInfo).prepend('You are white' + '<br>');
-  } else {
-    $(lozData.idInfo).prepend('INCONSISTENT ARGS' + '<br>');
-  }
+  lozzaEngine = new Worker(gameData.source);
+  lozzaEngine.onmessage = lozStandardRx;
+  lozzaEngine.postMessage("uci")
+  lozzaEngine.postMessage("ucinewgame")
+  lozzaEngine.postMessage("debug off")
 });
-

@@ -19,11 +19,13 @@
 
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
-  
+
   <link rel="stylesheet" href="web/index.css">
   <link rel="stylesheet" href="css/chessboard-1.0.0.min.css">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 </head>
+
+<!-- TODO Detect mobile and set board size based on screen width -->
 
 <body>
   <!-- Banner -->
@@ -34,7 +36,27 @@
     </a>
   </div>
   <div class="flex-vert">
+    <!-- Game Notifications -->
+    <div id="info" class="flex-item">White's turn to start</div>
+    <!-- Difficulty Selection -->
+    <div class="flex-horiz">
+      <div class="flex-item">Select Difficulty: &nbsp;
+        <select id="difficulty">
+          <option value="beginner">&nbsp;Beginner&nbsp;&nbsp;</option>
+          <option value="easy" selected="selected">&nbsp;Easy&nbsp;&nbsp;</option>
+          <option value="hard">&nbsp;Hard&nbsp;&nbsp;</option>
+          <option value="extreme">&nbsp;Extreme&nbsp;&nbsp;</option>
+        </select>
+      </div>
+      <div class="flex-item"></div>
+      <div class="flex-item"></div>
+      <div class="flex-item">
+        <button onclick="restart()" class="btn btn-danger">Reset</button>
+      </div>
+    </div>
+    <!-- Board -->
     <div id="board" class="flex-item" style="width: 450px"></div>
+    <!-- Credits -->
     <div class="flex-item">
       Powered by <a href="https://github.com/op12no2/lozza" target="_blank">Lozza</a> |
       <a href="https://github.com/jhlywa/chess.js" target="_blank">Chess.Js</a> |
@@ -47,8 +69,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.2/chess.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script src="js/chessboard-1.0.0.min.js"></script>
-<script src="js/lozuilib.js"></script>
-<script src="js/lozza.js"></script>
+<script src="js/simple-ai.js"></script>
+<script src="js/lozza.min.js"></script>
+<script src="js/lozza-ui-lib.js"></script>
 <script src="web/index.js"></script>
 
 </html>
