@@ -2,7 +2,7 @@
   "name": "alphano",
   "description": "AlphaNo",
   "version": "1.0.0",
-  "license": "(BSD-2-Clause OR MIT OR GPL-3.0)",
+  "license": "GPL-3.0",
   "author": "DJS",
   "engines": {
     "node": ">=8"
