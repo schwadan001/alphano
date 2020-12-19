@@ -11,7 +11,7 @@ let saiPieceValues = {
 function saiEval(board, perspective) {
     let turnMultiplier = (perspective == "w") ? 1 : -1;
     if (board.in_checkmate()) {
-        return Infinity * turnMultiplier;
+        return -1 * Infinity * turnMultiplier;
     }
     let fen = board.fen();
     let pieces = fen.split(" ")[0];

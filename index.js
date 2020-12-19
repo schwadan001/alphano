@@ -27,10 +27,13 @@ let pieceNames = {
 
 var board = null;
 var chess = null;
-var drag = true;
+var drag = false;
 var lozzaEngine = null;
 var lozzaStart = "startpos";
 var uiStart = "start";
+
+var player = "w"
+var switchSidesButton = document.getElementById("switch-sides-btn");
 
 gameData.page = "index.html";
 gameData.boardId = "board";
@@ -68,6 +71,7 @@ function onDrop(source, target, piece, newPos, oldPos, orientation) {
 }
 
 function makeAiMove() {
+  switchSidesButton.disabled = true;
   let difficulty = getDifficulty();
   setTimeout(function () {
     if (saiDifficulties.includes(difficulty)) {
@@ -76,7 +80,7 @@ function makeAiMove() {
     } else {
       makeLozzaMove();
     }
-  }, 500);
+  }, 100);
 }
 
 function makeLozzaMove() {
@@ -89,6 +93,7 @@ function executeMove(move) {
   chess.move(move);
   board.position(chess.fen());
   setNotification();
+  switchSidesButton.disabled = false;
   if (!chess.game_over()) {
     drag = true;
   }
@@ -157,6 +162,38 @@ function setNotification() {
   $(gameData.infoId).html(notification);
 }
 
+function switchSides() {
+  let fen = board.fen();
+  if (player == "w") {
+    player = "b";
+    side = "black";
+  } else {
+    player = "w";
+    side = "white";
+  }
+  board = new ChessBoard(gameData.boardId, {
+    showNotation: true,
+    draggable: true,
+    dropOffBoard: "snapback",
+    onDrop: onDrop,
+    onDragStart: onDragStart,
+    position: fen,
+    orientation: side
+  });
+  runGame();
+}
+
+function runGame() {
+  if (!chess.game_over()) {
+    if (getTurn() == player) {
+      drag = true;
+    } else {
+      makeAiMove();
+      setTimeout(runGame, (difficultyMap[getDifficulty()] + 1) * 1000);
+    }
+  }
+}
+
 $(function () {
   chess = new Chess();
   board = new ChessBoard(gameData.boardId, {
@@ -173,4 +210,6 @@ $(function () {
   lozzaEngine.postMessage("uci")
   lozzaEngine.postMessage("ucinewgame")
   lozzaEngine.postMessage("debug off")
+
+  runGame();
 });
