@@ -62,10 +62,7 @@ function onDrop(source, target, piece, newPos, oldPos, orientation) {
   drag = false;
   setNotification();
 
-  // make AI move based on difficulty
-  if (chess.game_over()) {
-    setNotification();
-  } else {
+  if (!chess.game_over()) {
     makeAiMove();
   }
 }
@@ -79,7 +76,6 @@ function makeAiMove() {
     } else {
       makeLozzaMove();
     }
-    setNotification();
   }, 500);
 }
 
@@ -92,10 +88,9 @@ function makeLozzaMove() {
 function executeMove(move) {
   chess.move(move);
   board.position(chess.fen());
+  setNotification();
   if (!chess.game_over()) {
     drag = true;
-  } else {
-    setNotification();
   }
 }
 
