@@ -147,12 +147,12 @@ function setNotification() {
     notification = "Checkmate - " + playerNames[lastMove.color] + " wins!";
   } else if (chess.insufficient_material()) {
     notification = "Draw due to insufficient material";
-  } else if (chess.in_draw()) {
-    notification = "Draw by 50 move rule";
   } else if (chess.in_stalemate()) {
     notification = "Draw by stalemate";
   } else if (chess.in_threefold_repetition()) {
     notification = "Draw by threefold repetition";
+  } else if (chess.in_draw()) {
+    notification = "Draw by 50 move rule";
   } else {
     if (moves.length > 0) {
       notification = playerNames[lastMove.color] + " moved " + pieceNames[lastMove.piece] +
